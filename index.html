@@ -48,6 +48,7 @@
     }
   </style>
 </head>
+<!-- <script src="main.js"></script> -->
 
 <body>
   <main>
@@ -75,8 +76,8 @@
       <button>Console Warn</button>
       <button>Console Assert</button>
       <button>Console Clear</button>
-      <button>Console Dir</button>
-      <button>Console dirxml</button>
+      <button id="console-dir">Console Dir</button>
+      <button id="console-dirxml">Console dirxml</button>
       <button>Console Group Start</button>
       <button>Console Group End</button>
       <button>Console Table</button>
@@ -86,8 +87,33 @@
       <button>Trigger a Global Error</button>
     </section>
   </main>
-
+  
+  <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
   <script>
+    window.TrackJS && TrackJS.install({ 
+      token: "9fe0181f16324111b6ad6645cbcfb7aa"
+      // for more configuration options, see https://docs.trackjs.com
+    });
+  </script>
+                          
+  <script>
+    class ValidationError extends Error {
+      constructor(message) {
+        super(message); // (1)
+        this.name = "ValidationError"; // (2)
+      }
+    }
+
+    window.onerror = function (message, source, lineno, colno, error) {
+      console.log(`Caught an error: ${message} at ${source}:${lineno}:${colno}`);
+      return true; // Prevents the firing of the default event handler
+    };
+
+    function triggerGlobalError() {
+      // This will intentionally throw a ReferenceError
+      console.log(boom); // 'boom' is not defined
+    }
+
     let form = document.querySelector('form');
     form.addEventListener('submit', e => {
       e.preventDefault();
@@ -95,13 +121,109 @@
       let firstNum = document.querySelector('#first-num').value;
       let secondNum = document.querySelector('#second-num').value;
       let operator = document.querySelector('#operator').value;
-      output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+
+      try {
+        if (isNaN(parseFloat(firstNum)) || isNaN(parseFloat(secondNum))) {
+          throw new ValidationError("Both input must be numeric.");
+        }
+
+        if (operator === '/' && parseFloat(secondNum) === 0) {
+          throw new ValidationError('Divison by zero si not allowed.');
+        }
+
+        let result = eval(`${firstNum} ${operator} ${secondNum}`);
+        output.innerHTML = result;
+      } catch (error) {
+        if (error instanceof ValidationError) {
+          console.log
+          output.textContent = `Validation Error: ${error.message}`;
+        } else {
+          output.textContent = `${error.message}`;
+        }
+      } finally {
+        console.log('Calculation attemped with inputs:', firstNum, secondNum);
+      }
+      // output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
     });
 
+    // let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
+
+    // Start your code here
+    // You may move this JS to another file if you wish
     let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
 
     // Start your code here
     // You may move this JS to another file if you wish
+
+    errorBtns.forEach(button => {
+      button.addEventListener('click', function () {
+        try {
+          switch (this.textContent) {
+            case 'Console Log':
+              console.log('Console Log Demo');
+              break;
+            case 'Console Error':
+              console.error('Console Log Demo');
+              break;
+            case 'Console Count':
+              console.count('Count Button');
+              break;
+            case 'Console Warn':
+              console.warn('Console Warn Button');
+              break;
+            case 'Console Assert':
+              let result = parseFloat(document.querySelector('output').textContent);
+              console.assert(result === 3, `Assertion failed: {number: ${result}, errorMsg: 'The number does not equal 3'}`);
+              break;
+            case 'Console Clear':
+              console.clear();
+              break;
+            case 'Console Dir':
+              console.dir(document.getElementById('console-dir'));
+              break;
+            case 'Console dirxml':
+              console.dirxml(document.getElementById('console-dirxml'));
+              break;
+            case 'Console Group Start':
+              console.group('Console Group');
+              break;
+            case 'Console Group End':
+              console.groupEnd();
+              break;
+            case 'Console Table':
+              console.table([{ a: 'Software Engineering', b: 110 }, { a: 'Progrmng Lang:Princpl&Paradigm', b: 130 }, { a: 'Advanced Software Engineering', b: 112 }]);
+              break;
+            case 'Start Timer':
+              console.time('Timer Button');
+              break;
+            case 'End Timer':
+              console.timeEnd('Timer Button');
+              break;
+            case 'Console Trace':
+              handleBtnClick();
+              break;
+            case 'Trigger a Global Error':
+              triggerGlobalError();
+              break;
+          }
+        } catch (error) {
+          console.error('Uncaught ReferenceError:', error.message);
+        }
+      });
+    });
+
+    function handleBtnClick() {
+      function deep() {
+        function deeper() {
+          function deepest() {
+            console.trace(); // This will output the trace to the console
+          }
+          deepest();
+        }
+        deeper();
+      }
+      deep();
+    }
   </script>
 </body>
 
