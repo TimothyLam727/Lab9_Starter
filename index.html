@@ -97,13 +97,6 @@
   </script>
                           
   <script>
-    class ValidationError extends Error {
-      constructor(message) {
-        super(message); // (1)
-        this.name = "ValidationError"; // (2)
-      }
-    }
-
     window.onerror = function (message, source, lineno, colno, error) {
       console.log(`Caught an error: ${message} at ${source}:${lineno}:${colno}`);
       return true; // Prevents the firing of the default event handler
@@ -124,22 +117,18 @@
 
       try {
         if (isNaN(parseFloat(firstNum)) || isNaN(parseFloat(secondNum))) {
-          throw new ValidationError("Both input must be numeric.");
+          console.error("Both input must be numeric.");
         }
 
         if (operator === '/' && parseFloat(secondNum) === 0) {
-          throw new ValidationError('Divison by zero si not allowed.');
+          console.error('Divison by zero si not allowed.');
         }
 
         let result = eval(`${firstNum} ${operator} ${secondNum}`);
         output.innerHTML = result;
       } catch (error) {
-        if (error instanceof ValidationError) {
-          console.log
-          output.textContent = `Validation Error: ${error.message}`;
-        } else {
-          output.textContent = `${error.message}`;
-        }
+        // output.textContent = `${error.message}`;
+        console.error(`${error.message}`)
       } finally {
         console.log('Calculation attemped with inputs:', firstNum, secondNum);
       }
